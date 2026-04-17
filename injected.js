@@ -42,16 +42,6 @@
   if (document.body) startObserving();
   else document.addEventListener('DOMContentLoaded', startObserving, { once: true });
 
-  const withPerPage = (rawUrl) => {
-    try {
-      const u = new URL(rawUrl, window.location.origin);
-      u.searchParams.set('per_page', '100');
-      return u.toString();
-    } catch {
-      return rawUrl;
-    }
-  };
-
   const redirectIfNumericSearch = (rawUrl) => {
     try {
       const u = new URL(rawUrl, window.location.origin);
@@ -110,14 +100,6 @@
         ingest(wrapped);
         return jsonResponse(wrapped);
       }
-
-      const newUrl = withPerPage(url);
-      if (resource instanceof Request) {
-        resource = new Request(newUrl, resource);
-      } else {
-        resource = newUrl;
-      }
-      url = newUrl;
     }
 
     const response = await originalFetch(resource, config);
@@ -139,17 +121,14 @@
     this.__headers = {};
     this.__redirectUrl = null;
 
-    let finalUrl = rawUrl;
     if (TARGET_PATTERN.test(rawUrl)) {
       const byIdUrl = redirectIfNumericSearch(rawUrl);
       if (byIdUrl) {
         this.__redirectUrl = byIdUrl;
-      } else {
-        finalUrl = withPerPage(rawUrl);
       }
     }
-    this.__interceptUrl = finalUrl;
-    return originalOpen.call(this, method, finalUrl, ...rest);
+    this.__interceptUrl = rawUrl;
+    return originalOpen.call(this, method, rawUrl, ...rest);
   };
 
   XMLHttpRequest.prototype.setRequestHeader = function (name, value) {

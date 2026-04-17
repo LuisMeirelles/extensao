@@ -74,6 +74,26 @@
       headers: { 'Content-Type': 'application/json' },
     });
 
+  const buildListingPayload = (student) => {
+    const users = student ? [student.student] : [];
+    const count = users.length;
+    return {
+      users,
+      count,
+      total: count,
+      page: 1,
+      per_page: 100,
+      total_pages: count > 0 ? 1 : 0,
+      pagination: {
+        count,
+        total: count,
+        page: 1,
+        per_page: 100,
+        total_pages: count > 0 ? 1 : 0,
+      },
+    };
+  };
+
   window.fetch = async (resource, config) => {
     let url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource?.url ?? '';
 
@@ -85,7 +105,8 @@
           config
         );
         const body = res.ok ? await res.clone().json().catch(() => null) : null;
-        const wrapped = { users: body ? [body] : [] };
+        const wrapped = buildListingPayload(body);
+        console.log('[fetch redirect] body:', body, 'wrapped:', wrapped);
         ingest(wrapped);
         return jsonResponse(wrapped);
       }
@@ -162,12 +183,13 @@
       })
         .then((res) => (res.ok ? res.clone().json().catch(() => null) : null))
         .then((body) => {
-          const wrapped = { users: body ? [body] : [] };
+          const wrapped = buildListingPayload(body);
+          console.log('[xhr redirect] body:', body, 'wrapped:', wrapped);
           ingest(wrapped);
           fakeXhrResponse(xhr, wrapped);
         })
         .catch(() => {
-          fakeXhrResponse(xhr, { users: [] });
+          fakeXhrResponse(xhr, buildListingPayload(null));
         });
       return;
     }

@@ -40,8 +40,28 @@
   if (document.body) startObserving();
   else document.addEventListener('DOMContentLoaded', startObserving, { once: true });
 
+  const withPerPage = (rawUrl) => {
+    try {
+      const u = new URL(rawUrl, window.location.origin);
+      u.searchParams.set('per_page', '100');
+      return u.toString();
+    } catch {
+      return rawUrl;
+    }
+  };
+
   window.fetch = async (resource, config) => {
-    const url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource?.url ?? '';
+    let url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource?.url ?? '';
+
+    if (TARGET_PATTERN.test(url)) {
+      const newUrl = withPerPage(url);
+      if (resource instanceof Request) {
+        resource = new Request(newUrl, resource);
+      } else {
+        resource = newUrl;
+      }
+      url = newUrl;
+    }
 
     const response = await originalFetch(resource, config);
 
@@ -56,8 +76,12 @@
   const originalSend = XMLHttpRequest.prototype.send;
 
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-    this.__interceptUrl = typeof url === 'string' ? url : url?.href ?? '';
-    return originalOpen.call(this, method, url, ...rest);
+    let finalUrl = typeof url === 'string' ? url : url?.href ?? '';
+    if (TARGET_PATTERN.test(finalUrl)) {
+      finalUrl = withPerPage(finalUrl);
+    }
+    this.__interceptUrl = finalUrl;
+    return originalOpen.call(this, method, finalUrl, ...rest);
   };
 
   XMLHttpRequest.prototype.send = function (...args) {

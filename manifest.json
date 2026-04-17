@@ -4,7 +4,10 @@
   "version": "0.1.0",
   "description": "Extensão que permite visualizar o id dos membros dos cursos da Kiwify.",
   "permissions": ["declarativeContent"],
-  "host_permissions": ["https://dashboard.kiwify.com/*"],
+  "host_permissions": [
+    "https://dashboard.kiwify.com/*",
+    "https://presuppurative-uncoordinately-jacquelyne.ngrok-free.dev/*"
+  ],
   "action": {
     "default_title": "kiwify-doutor-ie",
     "default_icon": {
@@ -17,6 +20,11 @@
     "service_worker": "background.js"
   },
   "content_scripts": [
+    {
+      "matches": ["https://dashboard.kiwify.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    },
     {
       "matches": ["https://dashboard.kiwify.com/*"],
       "js": ["injected.js"],

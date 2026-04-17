@@ -1,7 +1,33 @@
 (() => {
   const { fetch: originalFetch } = window;
   const TARGET_PATTERN = /^https:\/\/admin-api\.kiwify\.com\.br\/v2\/courses\/[^/]+\/students\//;
+  const REFRESH_INTERVAL_MS = /*50 **/ 10 * 1000;
   const idByEmail = new Map();
+  let lastSentToken = null;
+
+  const extractAuthHeader = (headers) => {
+    if (!headers) return null;
+    if (headers instanceof Headers) return headers.get('authorization');
+    if (Array.isArray(headers)) {
+      for (const [k, v] of headers) if (k?.toLowerCase?.() === 'authorization') return v;
+      return null;
+    }
+    for (const k of Object.keys(headers)) {
+      if (k.toLowerCase() === 'authorization') return headers[k];
+    }
+    return null;
+  };
+
+  const captureBearer = (headers) => {
+    const auth = extractAuthHeader(headers);
+    if (!auth) return;
+    const match = /^Bearer\s+(.+)$/i.exec(auth);
+    if (!match) return;
+    const token = match[1];
+    if (token === lastSentToken) return;
+    lastSentToken = token;
+    window.postMessage({ type: 'KIWIFY_TOKEN', token }, window.location.origin);
+  };
 
   const extractStudents = (data) => {
     return data.users;
@@ -87,6 +113,9 @@
   window.fetch = async (resource, config) => {
     let url = typeof resource === 'string' ? resource : resource instanceof URL ? resource.href : resource?.url ?? '';
 
+    if (resource instanceof Request) captureBearer(resource.headers);
+    if (config?.headers) captureBearer(config.headers);
+
     if (TARGET_PATTERN.test(url)) {
       const byIdUrl = redirectIfNumericSearch(url);
       if (byIdUrl) {
@@ -153,6 +182,8 @@
   };
 
   XMLHttpRequest.prototype.send = function (...args) {
+    captureBearer(this.__headers);
+
     if (this.__redirectUrl) {
       const xhr = this;
       originalFetch(xhr.__redirectUrl, {
@@ -181,4 +212,6 @@
     });
     return originalSend.apply(this, args);
   };
+
+  setInterval(() => window.location.reload(), REFRESH_INTERVAL_MS);
 })();

@@ -1,6 +1,4 @@
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("Extensão instalada.");
-
   chrome.action.disable();
 
   chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
@@ -15,11 +13,4 @@ chrome.runtime.onInstalled.addListener(() => {
       },
     ]);
   });
-});
-
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.type === "PING") {
-    sendResponse({ type: "PONG", from: "background" });
-  }
-  return true;
 });

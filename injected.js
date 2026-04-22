@@ -212,6 +212,4 @@
     });
     return originalSend.apply(this, args);
   };
-
-  setInterval(() => window.location.reload(), REFRESH_INTERVAL_MS);
 })();

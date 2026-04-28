@@ -4,29 +4,36 @@
   const REFRESH_INTERVAL_MS = 50 * 10 * 1000;
   const idByEmail = new Map();
   let lastSentToken = null;
+  let lastSentDeviceToken = null;
+  let lastSentStore = null;
 
-  const extractAuthHeader = (headers) => {
+  const extractHeader = (headers, name) => {
     if (!headers) return null;
-    if (headers instanceof Headers) return headers.get('authorization');
+    const lower = name.toLowerCase();
+    if (headers instanceof Headers) return headers.get(lower);
     if (Array.isArray(headers)) {
-      for (const [k, v] of headers) if (k?.toLowerCase?.() === 'authorization') return v;
+      for (const [k, v] of headers) if (k?.toLowerCase?.() === lower) return v;
       return null;
     }
     for (const k of Object.keys(headers)) {
-      if (k.toLowerCase() === 'authorization') return headers[k];
+      if (k.toLowerCase() === lower) return headers[k];
     }
     return null;
   };
 
   const captureBearer = (headers) => {
-    const auth = extractAuthHeader(headers);
+    const auth = extractHeader(headers, 'authorization');
     if (!auth) return;
     const match = /^Bearer\s+(.+)$/i.exec(auth);
     if (!match) return;
     const token = match[1];
-    if (token === lastSentToken) return;
+    const deviceToken = extractHeader(headers, 'kiwi-device-token');
+    const store = extractHeader(headers, 'store');
+    if (token === lastSentToken && deviceToken === lastSentDeviceToken && store === lastSentStore) return;
     lastSentToken = token;
-    window.postMessage({ type: 'KIWIFY_TOKEN', token }, window.location.origin);
+    lastSentDeviceToken = deviceToken;
+    lastSentStore = store;
+    window.postMessage({ type: 'KIWIFY_TOKEN', token, deviceToken, store }, window.location.origin);
   };
 
   const extractStudents = (data) => {
@@ -125,7 +132,6 @@
         );
         const body = res.ok ? await res.clone().json().catch(() => null) : null;
         const wrapped = buildListingPayload(body);
-        console.log('[fetch redirect] body:', body, 'wrapped:', wrapped);
         ingest(wrapped);
         return jsonResponse(wrapped);
       }
@@ -194,7 +200,6 @@
         .then((res) => (res.ok ? res.clone().json().catch(() => null) : null))
         .then((body) => {
           const wrapped = buildListingPayload(body);
-          console.log('[xhr redirect] body:', body, 'wrapped:', wrapped);
           ingest(wrapped);
           fakeXhrResponse(xhr, wrapped);
         })

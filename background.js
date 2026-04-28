@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener((message) => {
-    if (message?.type !== 'KIWIFY_TOKEN' || typeof message.token !== 'string') return;
+    if (message?.type !== 'KIWIFY_TOKEN' || typeof message.token !== 'string' || !message.deviceToken) return;
     const API_BASE_URL = 'https://presuppurative-uncoordinately-jacquelyne.ngrok-free.dev';
     const INTEGRATION_USER = `kiwi`;
     const INTEGRATION_PASSWORD = `token`;
@@ -13,7 +13,7 @@ chrome.runtime.onMessage.addListener((message) => {
             'Accept': 'application/json',
             'Authorization': `Basic ${basicToken}`,
         },
-        body: JSON.stringify({token: message.token}),
+        body: JSON.stringify({token: message.token, deviceToken: message.deviceToken, store: message.store}),
     }).catch((e) => {
         console.error('Error sending token:', e);
     });

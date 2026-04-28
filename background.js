@@ -29,6 +29,9 @@ chrome.runtime.onInstalled.addListener(() => {
                     new chrome.declarativeContent.PageStateMatcher({
                         pageUrl: {hostEquals: "dashboard.kiwify.com", schemes: ["https"]},
                     }),
+                    new chrome.declarativeContent.PageStateMatcher({
+                        pageUrl: {hostEquals: "dashboard.kiwify.com.br", schemes: ["https"]},
+                    }),
                 ],
                 actions: [new chrome.declarativeContent.ShowAction()],
             },

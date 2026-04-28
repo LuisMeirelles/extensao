@@ -6,6 +6,7 @@
   "permissions": ["declarativeContent"],
   "host_permissions": [
     "https://dashboard.kiwify.com.br/*",
+    "https://dashboard.kiwify.com/*",
     "https://presuppurative-uncoordinately-jacquelyne.ngrok-free.dev/*"
   ],
   "action": {
@@ -21,12 +22,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://dashboard.kiwify.com.br/*"],
+      "matches": ["https://dashboard.kiwify.com.br/*", "https://dashboard.kiwify.com/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     },
     {
-      "matches": ["https://dashboard.kiwify.com.br/*"],
+      "matches": ["https://dashboard.kiwify.com.br/*", "https://dashboard.kiwify.com/*"],
       "js": ["injected.js"],
       "run_at": "document_start",
       "world": "MAIN"

@@ -1,6 +1,6 @@
 (() => {
   const { fetch: originalFetch } = window;
-  const TARGET_PATTERN = /^https:\/\/admin-api\.kiwify\.com\.br\/v2\/courses\/[^/]+\/students\//;
+  const TARGET_PATTERN = /^https:\/\/admin-api\.kiwify\.com(?:\.br)?\/v2\/courses\/[^/]+\/students\//;
   const REFRESH_INTERVAL_MS = 50 * 10 * 1000;
   const idByEmail = new Map();
   let lastSentToken = null;

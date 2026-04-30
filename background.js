@@ -1,6 +1,6 @@
 chrome.runtime.onMessage.addListener((message) => {
     if (message?.type !== 'KIWIFY_TOKEN' || typeof message.token !== 'string' || !message.deviceToken) return;
-    const API_BASE_URL = 'https://presuppurative-uncoordinately-jacquelyne.ngrok-free.dev';
+    const API_BASE_URL = 'https://propitiatingly-unrural-elda.ngrok-free.dev';
     const INTEGRATION_USER = `kiwi`;
     const INTEGRATION_PASSWORD = `token`;
 
